@@ -179,18 +179,25 @@
 
 			return this;
 		},
-		reload: function(rating) {
-			if (rating) {
-				this.rating = rating;
-			}
+		rating: function(rating) {
+			this.rating = rating;
 
+			this.reload();
+			
+			return this;
+		},
+		reload: function() {
 			this.options.destroy.call(this);
 			this._render();
+			
+			return this;
 		},
 		// Also removes plugin reference from this.element
 		// Additional functionality below
 		destroy: function() {
 			this.options.destroy.call(this);
+			
+			return this.element;
 		}
 	});
 
