@@ -8,7 +8,7 @@
 
 	var defaults = {
 		css: { // Use {} to bypass adding CSS classes to the container via the plugin (you can use your own CSS files)
-			'color': 'gold',
+			'color': '#E7711B',
 			'text-shadow': '-1px 1px 0 rgba(127, 127, 127, 0.4)'
 		},
 		container: $('<span>').addClass('star-rating'), // By default, the rating container has class "star-rating"
@@ -17,7 +17,7 @@
 		star_blank: $('<i>').addClass('fa fa-star-o'),
 		star_half_blank: $('<i>').addClass('fa fa-star-half-o'),
 		/*
-		click: function(rating) { // Add some functionality for when a star is clicked
+		click: function(rating, event) { // Add some functionality for when a star is clicked
 			var item_id = this.element.closest('.item').attr('id');
 
 			var $plugin = this;
@@ -39,8 +39,7 @@
 			.always(function() {
 
 			});
-		},
-		*/
+		}, */
 		hover: function(rating, event) { // Only applies when a click event is defined
 			var lte_rating = this.stars.filter(':lt(' + (rating) + ')');
 			var gt_rating = this.stars.filter(':gt(' + (rating - 1) + ')');
@@ -99,12 +98,12 @@
 			return Math.round(rating * 2) / 2;
 		},
 		title: function() { // Set the title (hover text) on the container
-			return this.rating + (this.max ? ' out of ' + this.max : '');
+			return this.rating() + (this.max() ? ' out of ' + this.max() : '');
 		},
 		render: function() { // The logic performed when the star_rating container is ready to render
 			this.element.hide().after(this.star_rating);
 		},
-		destroy: function() { // Called if the star rating needs to be removed/destroyed from the elements
+		remove: function() { // Called if the star rating needs to be removed/destroyed from the elements
 			this.star_rating.remove();
 			this.element.show();
 		}
@@ -120,23 +119,18 @@
 
 	$.extend(Plugin.prototype, {
 		init: function () {
-			this.rating = this.options.rating.call(this.element);
-			this.max = $.isFunction(this.options.max) ? this.options.max.call(this.element) : this.options.max;
-
-			this._render();
-
-			return this;
+			return this._render();
 		},
 		_render: function() {
-			var rounded_rating = this.options.round.call(this, this.rating);
+			var rounded_rating = this.options.round.call(this, this.rating());
 			var whole_stars = Math.floor(rounded_rating);
 			// If the fraction after rounding is at least 0.5, add a half star
 			var half_star = (rounded_rating - whole_stars >= 0.5) ? 1 : 0;
 
 			this.star_rating = this.options.container
 				.clone(false)
-			    .css(this.options.css)
-			    .attr('title', this.options.title.call(this));
+				.css(this.options.css)
+				.attr('title', this.options.title.call(this));
 
 			this.stars = $();
 
@@ -152,8 +146,8 @@
 				);
 			}
 
-			if (this.max) {
-				for (var i = whole_stars + half_star; i < this.max; i++) {
+			if (this.max()) {
+				for (var i = whole_stars + half_star; i < this.max(); i++) {
 					this.stars = this.stars.add(this.options.star_blank.clone(false));
 				}
 			}
@@ -179,24 +173,47 @@
 
 			return this;
 		},
+		// Get or update the rating
 		rating: function(rating) {
-			this.rating = rating;
+			if (typeof rating === 'undefined') {
+				// If we haven't initialized the rating yet at all
+				if (typeof this._rating === 'undefined') {
+					this._rating = this.options.rating.call(this.element);
+				}
 
-			this.reload();
-			
-			return this;
+				return this._rating;
+			} else {
+				this._rating = rating;
+				return this.reload();
+			}
+		},
+		// Get or update the max
+		max: function(max) {
+			if (typeof max === 'undefined') {
+				// If we haven't initialized the max yet at all
+				if (typeof this._max === 'undefined') {
+					this._max = $.isFunction(this.options.max) ? this.options.max.call(this.element) : this.options.max;
+				}
+
+				return this._max;
+			} else {
+				this._max = max;
+				return this.reload();
+			}
 		},
 		reload: function() {
-			this.options.destroy.call(this);
-			this._render();
-			
+			this.remove();
+			return this._render();
+		},
+		remove: function() {
+			this.options.remove.call(this);
 			return this;
 		},
 		// Also removes plugin reference from this.element
 		// Additional functionality below
 		destroy: function() {
-			this.options.destroy.call(this);
-			
+			this.remove();
+
 			return this.element;
 		}
 	});
