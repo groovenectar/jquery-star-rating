@@ -7,61 +7,104 @@
 	"use strict";
 
 	var defaults = {
-		css: {
+		css: { // Use {} to bypass adding CSS classes to the container via the plugin (you can use your own CSS files)
 			'color': 'gold',
-			'text-shadow': '-1px 1px 0 rgba(127, 127, 127, 0.6)'
+			'text-shadow': '-1px 1px 0 rgba(127, 127, 127, 0.4)'
 		},
-		container: $('<span>').addClass('star-rating'),
+		container: $('<span>').addClass('star-rating'), // By default, the rating container has class "star-rating"
 		star: $('<i>').addClass('fa fa-star'),
 		star_blank: $('<i>').addClass('fa fa-star-half'),
 		star_empty: $('<i>').addClass('fa fa-star-o'),
 		star_half_blank: $('<i>').addClass('fa fa-star-half-o'),
-		click: function(rating) {
+		/*
+		click: function(rating) { // Add some functionality for when a star is clicked
+			var item_id = this.element.closest('.item').attr('id');
 
+			var $plugin = this;
+
+			$.post(
+				'rate-item.php',
+				{
+					item: item_id,
+					item_rating: rating
+				}
+			)
+			.done(function(data) {
+				alert('Your rating was stored: ' + rating);
+				$plugin.reload(data.updated_rating);
+			})
+			.fail(function() {
+				alert('Could not store your rating');
+			})
+			.always(function() {
+
+			});
 		},
-		// max: 5,
-		max: function() {
-			var text = this.text().trim();
-			var matches;
+		*/
+		hover: function(rating, event) { // Only applies when a click event is defined
+			var lte_rating = this.stars.filter(':lt(' + (rating) + ')');
+			var gt_rating = this.stars.filter(':gt(' + (rating - 1) + ')');
 
-			// Format: 3.5/5
-			// Format: 3.5/5 stars
-			// Format: 3.5/5 star rating
-			if (matches = text.match(/\/(\d+)(?: [\w\s]+)?$/i)) {
-				return matches[1];
-			// Format: 3.5 of 5
-			// Format: 3.5 out of 5
-			// Format: 3.5 out of 5 stars
-			// Format: 3.5 out of 5 points earned
-			} else if (matches = text.match(/ (?:out )?of (\d+)(?: [\w\s]+)?$/i)) {
-				return matches[1];
+			if(event.type == 'mouseenter') {
+				this.stars.each(function() {
+					$(this).data('class-prev', $(this).attr('class'));
+				});
+
+				lte_rating.attr('class', this.options.star.attr('class'));
+				gt_rating.attr('class', this.options.star_empty.attr('class'));
+			} else if (event.type == 'mouseleave') {
+				this.stars.each(function() {
+					$(this).attr('class', $(this).data('class-prev'));
+				});
 			}
-
-			return false;
 		},
-		rating: function() {
+		rating: function() { // Extract the rating from the element
 			var text = this.text().trim();
 			var matches;
 
 			if (matches = text.match(/^([\d.]+)/i)) {
+				// Format: 3.5
+				// Format: 3.5/5 stars
+				// Format: 3.5/5 star rating
 				return matches[1];
 			} else if (matches = text.match(/^([*]+)/i)) {
+				// Format: *****
 				return matches[1].length;
 			}
 
 			return 0;
 		},
-		round: function(rating) {
+		// max: 5, // You can optionally use an integer for the maximum rating value
+		max: function() { // If max is a function, use it to extract the maximum rating value from the element
+			var text = this.text().trim();
+			var matches;
+
+			if (matches = text.match(/\/(\d+)(?: [\w\s]+)?$/i)) {
+				// Format: 3.5/5
+				// Format: 3.5/5 stars
+				// Format: 3.5/5 star rating
+				return matches[1];
+			} else if (matches = text.match(/ (?:out )?of (\d+)(?: [\w\s]+)?$/i)) {
+				// Format: 3.5 of 5
+				// Format: 3.5 out of 5
+				// Format: 3.5 out of 5 stars
+				// Format: 3.5 out of 5 points earned
+				return matches[1];
+			}
+
+			return false;
+		},
+		round: function(rating) { // Specify what to do with fractional ratings
 			// Round to the nearest 0.5
 			return Math.round(rating * 2) / 2;
 		},
-		title: function() {
+		title: function() { // Set the title (hover text) on the container
 			return this.rating + (this.max ? ' out of ' + this.max : '');
 		},
-		render: function() {
+		render: function() { // The logic performed when the star_rating container is ready to render
 			this.element.hide().after(this.star_rating);
 		},
-		destroy: function() {
+		destroy: function() { // Called if the star rating needs to be removed/destroyed from the elements
 			this.star_rating.remove();
 			this.element.show();
 		}
@@ -95,12 +138,14 @@
 			    .css(this.options.css)
 			    .attr('title', this.options.title.call(this));
 
+			this.stars = $();
+
 			for (var i = 0; i < whole_stars; i++) {
-				this.star_rating.append(this.options.star.clone(false));
+				this.stars = this.stars.add(this.options.star.clone(false));
 			}
 
 			if (half_star) {
-				this.star_rating.append(
+				this.stars = this.stars.add(
 					this.max ?
 						this.options.star_half_blank.clone(false) :
 						this.options.star_blank.clone(false)
@@ -109,13 +154,38 @@
 
 			if (this.max) {
 				for (var i = whole_stars + half_star; i < this.max; i++) {
-					this.star_rating.append(this.options.star_empty.clone(false));
+					this.stars = this.stars.add(this.options.star_empty.clone(false));
 				}
+			}
+
+			this.star_rating.append(this.stars);
+
+			var $plugin = this;
+
+			// Don't bother with click or hover if we don't have a function for clicking
+			if ($.isFunction(this.options.click)) {
+				this.star_rating.css({'cursor': 'pointer'});
+
+				this.stars.hover(function (e) {
+					$plugin.options.hover.call($plugin, $(this).index() + 1, e);
+				});
+
+				this.stars.on('click', function (e) {
+					$plugin.options.click.call($plugin, $(this).index() + 1, e);
+				});
 			}
 
 			this.options.render.call(this);
 
 			return this;
+		},
+		reload: function(rating) {
+			if (rating) {
+				this.rating = rating;
+			}
+
+			this.options.destroy.call(this);
+			this._render();
 		},
 		// Also removes plugin reference from this.element
 		// Additional functionality below
@@ -140,13 +210,13 @@
 				}
 			});
 		} else if (typeof options === 'string' && options[0] !== '_' && options !== 'init') {
-			var returns;
+			var applied;
 
 			this.each(function() {
 				var instance = $.data(this, 'plugin_' + plugin_name);
 
-				if (instance instanceof Plugin && typeof instance[options] === 'function') {
-					returns = instance[options].apply( instance, Array.prototype.slice.call(args, 1));
+				if (instance instanceof Plugin && $.isFunction(instance[options])) {
+					applied = instance[options].apply(instance, Array.prototype.slice.call(args, 1));
 				}
 
 				if (options === 'destroy') {
@@ -154,7 +224,7 @@
 				}
 			});
 
-			return returns !== undefined ? returns : this;
+			return applied !== undefined ? applied : this;
 		}
 	};
 
