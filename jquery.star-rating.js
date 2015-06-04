@@ -13,8 +13,8 @@
 		},
 		container: $('<span>').addClass('star-rating'), // By default, the rating container has class "star-rating"
 		star: $('<i>').addClass('fa fa-star'),
-		star_blank: $('<i>').addClass('fa fa-star-half'),
-		star_empty: $('<i>').addClass('fa fa-star-o'),
+		star_half: $('<i>').addClass('fa fa-star-half'),
+		star_blank: $('<i>').addClass('fa fa-star-o'),
 		star_half_blank: $('<i>').addClass('fa fa-star-half-o'),
 		/*
 		click: function(rating) { // Add some functionality for when a star is clicked
@@ -51,7 +51,7 @@
 				});
 
 				lte_rating.attr('class', this.options.star.attr('class'));
-				gt_rating.attr('class', this.options.star_empty.attr('class'));
+				gt_rating.attr('class', this.options.star_blank.attr('class'));
 			} else if (event.type == 'mouseleave') {
 				this.stars.each(function() {
 					$(this).attr('class', $(this).data('class-prev'));
@@ -148,13 +148,13 @@
 				this.stars = this.stars.add(
 					this.max ?
 						this.options.star_half_blank.clone(false) :
-						this.options.star_blank.clone(false)
+						this.options.star_half.clone(false)
 				);
 			}
 
 			if (this.max) {
 				for (var i = whole_stars + half_star; i < this.max; i++) {
-					this.stars = this.stars.add(this.options.star_empty.clone(false));
+					this.stars = this.stars.add(this.options.star_blank.clone(false));
 				}
 			}
 
