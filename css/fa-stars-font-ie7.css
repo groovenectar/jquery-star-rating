@@ -1,0 +1,15 @@
+.fa {
+	font-family: 'fa-stars';
+	font-style: normal;
+	font-weight: normal;
+
+	/* fix buttons height */
+	line-height: 1em;
+
+	font-size: inherit;
+}
+
+.fa-star { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf005;&nbsp;'); }
+.fa-star-o { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf006;&nbsp;'); }
+.fa-star-half { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf089;&nbsp;'); }
+.fa-star-half-o { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf123;&nbsp;'); }

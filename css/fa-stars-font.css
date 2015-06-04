@@ -1,0 +1,37 @@
+@font-face {
+	font-family: 'fa-stars';
+	src: url('../fonts/fa-stars.eot?33375063');
+	src: url('../fonts/fa-stars.eot?33375063#iefix') format('embedded-opentype'),
+	     url('../fonts/fa-stars.woff?33375063') format('woff'),
+	     url('../fonts/fa-stars.ttf?33375063') format('truetype'),
+	     url('../fonts/fa-stars.svg?33375063#fa-stars') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.fa {
+	font-family: "fa-stars";
+	font-style: normal;
+	font-weight: normal;
+	font-stretch: normal;
+	font-size: inherit;
+	display: inline-block;
+	text-decoration: inherit;
+	width: 1em;
+	text-align: center;
+	font-variant: normal;
+	text-transform: none;
+	transform: translate(0, 0);
+	text-rendering: auto;
+	line-height: 1;
+	/* fix buttons height, for twitter bootstrap */
+	/* line-height: 1em; */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	speak: none;
+}
+
+.fa-star:before { content: '\f005'; }
+.fa-star-o:before { content: '\f006'; }
+.fa-star-half:before { content: '\f089'; }
+.fa-star-half-o:before { content: '\f123'; }
