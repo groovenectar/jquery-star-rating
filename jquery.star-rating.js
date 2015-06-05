@@ -140,7 +140,7 @@
 
 			if (half_star) {
 				this.stars = this.stars.add(
-					this.max ?
+					this.max() ?
 						this.options.star_half_blank.clone(false) :
 						this.options.star_half.clone(false)
 				);
