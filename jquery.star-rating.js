@@ -19,9 +19,7 @@
 		/*
 		click: function(rating, event) { // Add some functionality for when a star is clicked
 			var item_id = this.element.closest('.item').attr('id');
-
 			var $plugin = this;
-
 			$.post(
 				'rate-item.php',
 				{
@@ -37,9 +35,9 @@
 				alert('Could not store your rating');
 			})
 			.always(function() {
-
 			});
-		}, */
+		},
+		*/
 		hover: function(rating, event) { // Only applies when a click event is defined
 			var lte_rating = this.stars.filter(':lt(' + (rating) + ')');
 			var gt_rating = this.stars.filter(':gt(' + (rating - 1) + ')');
@@ -61,9 +59,11 @@
 			var text = this.text().trim();
 			var matches;
 
-			if (matches = text.match(/^([\d.]+)/i)) {
+			if (matches = text.match(/^(?:[^\d]+)?([\d.]+)/i)) {
 				// Format: 3.5
+				// Format: Rated 3.5
 				// Format: 3.5/5 stars
+				// Format: Rated 3.5 out of 5 stars
 				// Format: 3.5/5 star rating
 				return matches[1];
 			} else if (matches = text.match(/^([*]+)/i)) {
@@ -98,14 +98,17 @@
 			return Math.round(rating * 2) / 2;
 		},
 		title: function() { // Set the title (hover text) on the container
-			return this.rating() + (this.max() ? ' out of ' + this.max() : '');
+			return 'Rated ' + this.rating() + (this.max() ? ' out of ' + this.max() : '');
 		},
 		render: function() { // The logic performed when the star_rating container is ready to render
-			this.element.hide().after(this.star_rating);
+			this.element
+				.hide()
+				.attr('aria-hidden', 'true')
+				.after(this.star_rating);
 		},
 		remove: function() { // Called if the star rating needs to be removed/destroyed from the elements
 			this.star_rating.remove();
-			this.element.show();
+			this.element.attr('aria-hidden', null).show();
 		}
 	};
 
@@ -130,6 +133,7 @@
 			this.star_rating = this.options.container
 				.clone(false)
 				.css(this.options.css)
+				.attr('aria-label', this.options.title.call(this))
 				.attr('title', this.options.title.call(this));
 
 			this.stars = $();
@@ -140,7 +144,7 @@
 
 			if (half_star) {
 				this.stars = this.stars.add(
-					this.max() ?
+					this.max ?
 						this.options.star_half_blank.clone(false) :
 						this.options.star_half.clone(false)
 				);
